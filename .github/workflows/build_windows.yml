@@ -1,0 +1,33 @@
+name: Build Windows Executable
+
+on:
+  workflow_dispatch: # 允许手动点击按钮触发构建
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install uv (Python Package Manager)
+        uses: astral-sh/setup-uv@v1
+        with:
+          version: "0.9.10"
+
+      - name: Install FFmpeg
+        uses: FedericoCarboni/setup-ffmpeg@v3
+
+      - name: Run Packaging Script
+        shell: powershell
+        run: |
+          # 使用 --skip-winget 跳过交互式安装，直接利用 GitHub 环境
+          .\packaging\windows\package_executable.ps1 --skip-winget
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lada-windows-build
+          path: dist/*.7z
+          retention-days: 5
